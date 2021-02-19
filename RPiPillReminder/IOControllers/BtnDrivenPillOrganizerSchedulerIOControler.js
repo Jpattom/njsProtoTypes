@@ -1,22 +1,24 @@
 const { isNull } = require('util');
-const RGBLEDOutputController = require('./RGBLEDOutputController');
-
 const Gpio = require('pigpio').Gpio; //include pigpio to interact with the GPIO
-const LED = new Gpio(4, { mode: Gpio.OUTPUT }); //use GPIO pin 4 as output
+const schedule = require('node-schedule');
 
 class BtnDrivenPillOrganizerSchedulerIOControler {
 
     constructor(buttonPressed, buttonReleased) {
-
-
-        var btnNumberDay = 0;
+        var btnNumberDay = new Date().getDay();
+        const job = schedule.scheduleJob('00 00 * * *', function () {
+            btnNumberDay = new Date().getDay();
+        })
+        
         var btnNumber = 0;
         var raiseEvent = true;
         var captureB1 = true;
         var captureB2 = true;
 
-        var incrementBy = 3;//3 is for Rx-Rx-Rx style this can be 2 if need to schedule only two times a day read from config or db later
-
+        var numberofSlotsPerDay = 3;//3 is for Rx-Rx-Rx style this can be 2 if need to schedule only two times a day read from config or db later
+        var numberOfDays = 7; // 7 days a week intil setup 3 times 7 dys 
+        var startDayOftheWeek = 0;// Considering 0 for Sunday
+        
         const pushButton1 = new Gpio(17, {
             mode: Gpio.INPUT, pullupdon: Gpio.PUD_OFF, edge: Gpio.RISING_EDGE, alert: false, timeout: 10
         }); //use GPIO pin 17 as input, and 'both' button presses, and releases should be handled
@@ -53,7 +55,7 @@ class BtnDrivenPillOrganizerSchedulerIOControler {
 
         function RaiseButtonPress() {
             if (btnNumber != 0) {
-                var btnRaised = btnNumber + btnNumberDay;
+                var btnRaised = btnNumber + (btnNumberDay - startDayOftheWeek)  * numberofSlotsPerDay;
                 if (!isNull(buttonPressed))
                     buttonPressed(btnRaised);
                 resetStatuses();
@@ -98,14 +100,16 @@ class BtnDrivenPillOrganizerSchedulerIOControler {
         });
 
         function previous() {
-            btnNumberDay -= incrementBy;
+            btnNumberDay -= 1;
             if (btnNumberDay < 0)
-                btnNumberDay = 0;
+                btnNumberDay = numberOfDays - 1;
             resetStatuses();
         }
 
         function next() {
-            btnNumberDay += incrementBy;
+            btnNumberDay += 1;
+            if (btnNumberDay >= numberOfDays)
+                btnNumberDay = 0;
             resetStatuses();
         }
 
@@ -120,49 +124,5 @@ class BtnDrivenPillOrganizerSchedulerIOControler {
     }
 }
 
-rgbLEDOutputController = new RGBLEDOutputController();
+module.exports = BtnDrivenPillOrganizerSchedulerIOControler
 
-function shutdown() {
-    LED.digitalWrite(0);
-    console.clear();
-    rgbLEDOutputController.LedOff();
-    console.log('\nThank you for using the Product Bye....................');
-
-    setTimeout(function () {
-        process.exit(0);
-    }, 1000);
-}
-
-
-
-
-const btnDrivenPillOrganizerSchedulerIOControler = new BtnDrivenPillOrganizerSchedulerIOControler(function (pressedbtNumber) {
-
-
-    console.log('Button ' + pressedbtNumber + ' Pressed');
-
-    switch (pressedbtNumber % 3) {
-        case 0: {
-            rgbLEDOutputController.Light(255, 0, 0);
-            break;
-        }
-        case 1: {
-            rgbLEDOutputController.Light(0, 255, 0);
-            break;
-        }
-        case 2: {
-            rgbLEDOutputController.Light(0, 0, 255);
-            break;
-        }
-        default:
-            break;
-    }
-});
-
-process.on('SIGHUP', shutdown);
-process.on('SIGHUP', shutdown);
-process.on('SIGINT', shutdown);
-process.on('SIGTERM', shutdown);
-process.on('SIGCONT', shutdown);
-
-LED.digitalWrite(1);
