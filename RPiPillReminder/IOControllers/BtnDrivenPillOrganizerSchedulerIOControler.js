@@ -15,8 +15,8 @@ class BtnDrivenPillOrganizerSchedulerIOControler {
         var captureB1 = true;
         var captureB2 = true;
 
-        var numberofSlotsPerDay = 3;//3 is for Rx-Rx-Rx style this can be 2 if need to schedule only two times a day read from config or db later
-        var numberOfDays = 7; // 7 days a week intil setup 3 times 7 dys 
+        var numberofSlotsPerDay = 3;//3 is for Rx-Rx-Rx style, 2 for 1-0-1 style this can be 2 if need to schedule only two times a day read from config or db later
+        var numberOfDays = 7; // 7 days a week initial setup 3 times 7 days
         var startDayOftheWeek = 0;// Considering 0 for Sunday
         
         const pushButton1 = new Gpio(17, {
@@ -53,13 +53,33 @@ class BtnDrivenPillOrganizerSchedulerIOControler {
             }
         });
 
+        const pushButton5 = new Gpio(24, {
+            mode: Gpio.INPUT, pullupdon: Gpio.PUD_OFF, edge: Gpio.RISING_EDGE, alert: false, timeout: 10
+        }); //use GPIO pin 27 as input, and 'both' button presses, and releases should be handled
+
+        pushButton5.glitchFilter(10000);
+		
+		var captureB5 = true;
+		
+        pushButton5.on('interrupt', (value) => { //Watch for hardware interrupts on pushButton1 GPIO, specify callback function
+            if (value === 1 && captureB2) {
+                btnNumber = btnNumber + 4;
+                captureB5 = false;
+                if (raiseEvent) {
+                    raiseEvent = false;
+                    setTimeout(RaiseButtonPress, 1000);
+                }
+            }
+        });
+		
         function RaiseButtonPress() {
-            if (btnNumber != 0) {
+            if (btnNumber != 0 &&  btnNumber <=  numberofSlotsPerDay) {
                 var btnRaised = btnNumber + (btnNumberDay - startDayOftheWeek)  * numberofSlotsPerDay;
                 if (!isNull(buttonPressed))
                     buttonPressed(btnRaised);
+			}
                 resetStatuses();
-            }
+            
         }
 
         const pushButton3 = new Gpio(22, {
@@ -99,6 +119,8 @@ class BtnDrivenPillOrganizerSchedulerIOControler {
             }
         });
 
+		
+		
         function previous() {
             btnNumberDay -= 1;
             if (btnNumberDay < 0)
@@ -120,6 +142,7 @@ class BtnDrivenPillOrganizerSchedulerIOControler {
             captureB2 = true;
             captureB3 = true;
             captureB4 = true;
+			captureB5 = true;
         }
     }
 }
