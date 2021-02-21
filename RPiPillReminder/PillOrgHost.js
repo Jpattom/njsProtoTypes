@@ -1,8 +1,9 @@
 // JavaScript source code
 const Gpio = require('pigpio').Gpio; //include pigpio to interact with the GPIO
+const schedule = require('node-schedule');
 
 const RGBLEDOutputController = require('./IOControllers/RGBLEDOutputController');
-const BtnDrivenPillOrganizerSchedulerIOControler = require('./IOControllers/BtnDrivenPillOrganizerSchedulerIOControler');
+const MatrixSwitchInputControler = require('./IOControllers/MatrixSwitchInputControler');
 
 var rgbLEDOutputController = new RGBLEDOutputController();
 const LED = new Gpio(4, { mode: Gpio.OUTPUT }); //use GPIO pin 4 as output
@@ -20,12 +21,12 @@ function shutdown() {
 
 
 
-const btnDrivenPillOrganizerSchedulerIOControler = new BtnDrivenPillOrganizerSchedulerIOControler(function (pressedbtNumber) {
+const matrixSwitchInputControler = new MatrixSwitchInputControler(function (pressedBtnNumber) {
 
 
-    console.log('Button ' + pressedbtNumber + ' Pressed');
+    console.log('Button ' + pressedBtnNumber + ' Pressed');
 
-    switch (pressedbtNumber % 3) {
+    switch (pressedBtnNumber % 3) {
         case 0: {
             rgbLEDOutputController.Light(0, 0, 255);
             break;
@@ -41,7 +42,15 @@ const btnDrivenPillOrganizerSchedulerIOControler = new BtnDrivenPillOrganizerSch
         default:
             break;
     }
-});
+}, function (releasedBtnNumber){
+	
+}, 4, 0, new Date().getDay());
+
+matrixSwitchInputControler.SetActiveRow();
+
+const job = schedule.scheduleJob('00 00 * * *', function () {
+    matrixSwitchInputControler.SetActiveRow();
+})
 
 process.on('SIGHUP', shutdown);
 process.on('SIGHUP', shutdown);

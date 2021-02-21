@@ -1,24 +1,23 @@
 const { isNull } = require('util');
 const Gpio = require('pigpio').Gpio; //include pigpio to interact with the GPIO
-const schedule = require('node-schedule');
 
-class BtnDrivenPillOrganizerSchedulerIOControler {
+var currentRow = 7;
+var numberOfRows = 7;
 
-    constructor(buttonPressed, buttonReleased) {
-        var btnNumberDay = new Date().getDay();
-        const job = schedule.scheduleJob('00 00 * * *', function () {
-            btnNumberDay = new Date().getDay();
-        })
-        
+class MatrixSwitchInputControler {
+
+    constructor(buttonPressed, buttonReleased, nuberOfColumns = 3, startingRow = 0, initRow) {
+
+        currentRow = initRow;
         var btnNumber = 0;
         var raiseEvent = true;
         var captureB1 = true;
         var captureB2 = true;
 
-        var numberofSlotsPerDay = 3;//3 is for Rx-Rx-Rx style, 2 for 1-0-1 style this can be 2 if need to schedule only two times a day read from config or db later
-        var numberOfDays = 7; // 7 days a week initial setup 3 times 7 days
-        var startDayOftheWeek = 0;// Considering 0 for Sunday
-        
+        var numberOfColumnsPerRow = nuberOfColumns;//3 is for Rx-Rx-Rx style, 2 for 1-0-1 style this can be 2 if need to schedule only two times a day read from config or db later
+        numberOfRows = 7; // 7 days a week initial setup 3 times 7 days
+        var firstRowNumber = startingRow;// Considering 0 for Sunday
+
         const pushButton1 = new Gpio(17, {
             mode: Gpio.INPUT, pullupdon: Gpio.PUD_OFF, edge: Gpio.RISING_EDGE, alert: false, timeout: 10
         }); //use GPIO pin 17 as input, and 'both' button presses, and releases should be handled
@@ -58,9 +57,9 @@ class BtnDrivenPillOrganizerSchedulerIOControler {
         }); //use GPIO pin 27 as input, and 'both' button presses, and releases should be handled
 
         pushButton5.glitchFilter(10000);
-		
-		var captureB5 = true;
-		
+
+        var captureB5 = true;
+
         pushButton5.on('interrupt', (value) => { //Watch for hardware interrupts on pushButton1 GPIO, specify callback function
             if (value === 1 && captureB2) {
                 btnNumber = btnNumber + 4;
@@ -71,15 +70,15 @@ class BtnDrivenPillOrganizerSchedulerIOControler {
                 }
             }
         });
-		
+
         function RaiseButtonPress() {
-            if (btnNumber != 0 &&  btnNumber <=  numberofSlotsPerDay) {
-                var btnRaised = btnNumber + (btnNumberDay - startDayOftheWeek)  * numberofSlotsPerDay;
+            if (btnNumber != 0 && btnNumber <= numberOfColumnsPerRow) {
+                var btnRaised = btnNumber + (currentRow - firstRowNumber) * numberOfColumnsPerRow;
                 if (!isNull(buttonPressed))
                     buttonPressed(btnRaised);
-			}
-                resetStatuses();
-            
+            }
+            resetStatuses();
+
         }
 
         const pushButton3 = new Gpio(22, {
@@ -95,7 +94,7 @@ class BtnDrivenPillOrganizerSchedulerIOControler {
                 captureB3 = false;
                 if (raiseEvent) {
                     raiseEvent = false;
-                    setTimeout(previous, 1000);
+                    setTimeout(setToPrevRow, 1000);
                 }
             }
         });
@@ -114,24 +113,22 @@ class BtnDrivenPillOrganizerSchedulerIOControler {
                 captureB4 = false;
                 if (raiseEvent) {
                     raiseEvent = false;
-                    setTimeout(next, 1000);
+                    setTimeout(setToNextRow, 1000);
                 }
             }
         });
 
-		
-		
-        function previous() {
-            btnNumberDay -= 1;
-            if (btnNumberDay < 0)
-                btnNumberDay = numberOfDays - 1;
+        function setToPrevRow() {
+            currentRow -= 1;
+            if (currentRow < 0)
+                currentRow = numberOfRows - 1;
             resetStatuses();
         }
 
-        function next() {
-            btnNumberDay += 1;
-            if (btnNumberDay >= numberOfDays)
-                btnNumberDay = 0;
+        function setToNextRow() {
+            currentRow += 1;
+            if (currentRow >= numberOfRows)
+                currentRow = 0;
             resetStatuses();
         }
 
@@ -142,10 +139,19 @@ class BtnDrivenPillOrganizerSchedulerIOControler {
             captureB2 = true;
             captureB3 = true;
             captureB4 = true;
-			captureB5 = true;
+            captureB5 = true;
         }
     }
+
+    SetActiveRow() {
+        currentRow += 1;
+        if (currentRow >= numberOfRows)
+            currentRow = 0;
+        //resetStatuses();
+    }
+
+
 }
 
-module.exports = BtnDrivenPillOrganizerSchedulerIOControler
+module.exports = MatrixSwitchInputControler
 
