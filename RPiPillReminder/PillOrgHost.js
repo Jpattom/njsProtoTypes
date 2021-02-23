@@ -4,9 +4,11 @@ const schedule = require('node-schedule');
 
 const RGBLEDOutputController = require('./IOControllers/RGBLEDOutputController');
 const MatrixSwitchInputControler = require('./IOControllers/MatrixSwitchInputControler');
+const TwoBySevenPillOrganizer = require('./TwoBySevenPillOrganizer');
 
 var rgbLEDOutputController = new RGBLEDOutputController();
 const LED = new Gpio(4, { mode: Gpio.OUTPUT }); //use GPIO pin 4 as output
+
 
 function shutdown() {
     LED.digitalWrite(0);
@@ -19,34 +21,15 @@ function shutdown() {
     }, 1000);
 }
 
+twoBySevenPillOrganizer = new TwoBySevenPillOrganizer();
 
+const matrixSwitchInputControler = new MatrixSwitchInputControler(
+    twoBySevenPillOrganizer.WhenPillInSlot
+    , twoBySevenPillOrganizer.WhenPillOutOfSlot
+    , twoBySevenPillOrganizer.GetNumberOfDays()
+    , twoBySevenPillOrganizer.GetNumberOfSlotsPerDay()
+    , new Date().getDay());
 
-const matrixSwitchInputControler = new MatrixSwitchInputControler(function (pressedBtnNumber) {
-
-
-    console.log('Button ' + pressedBtnNumber + ' Pressed');
-
-    switch (pressedBtnNumber % 3) {
-        case 0: {
-            rgbLEDOutputController.Light(0, 0, 255);
-            break;
-        }
-        case 1: {
-            rgbLEDOutputController.Light(0, 255, 0);
-            break;
-        }
-        case 2: {
-            rgbLEDOutputController.Light(255, 0, 0);
-            break;
-        }
-        default:
-            break;
-    }
-}, function (releasedBtnNumber){
-	
-}, 4, 0, new Date().getDay());
-
-matrixSwitchInputControler.SetActiveRow();
 
 const job = schedule.scheduleJob('00 00 * * *', function () {
     matrixSwitchInputControler.SetActiveRow();

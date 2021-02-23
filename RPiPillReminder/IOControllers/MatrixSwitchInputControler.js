@@ -1,28 +1,33 @@
+const { exception } = require('console');
 const { isNull } = require('util');
 const Gpio = require('pigpio').Gpio; //include pigpio to interact with the GPIO
+const fs = require('fs');
+var btnStateData = require(__dirname + '/buttonstate.json');  //new Object();
 
 var currentRow = 7;
 var numberOfRows = 7;
 
 class MatrixSwitchInputControler {
 
-    constructor(buttonPressed, buttonReleased, nuberOfColumns = 3, startingRow = 0, initRow) {
+    constructor(buttonPressed, buttonReleased, paramNumberOfRows = 7, nuberOfColumns = 3, initRow = 0) {
+        numberOfRows = paramNumberOfRows;
+        if (initRow < numberOfRows)
+            currentRow = initRow;
+        else
+            throw exception('businnesslayerexception:Cannot set current row to ' + initRow + ' row number based on 0; if number of is 7 max of init row can be between 0 and 6')
 
-        currentRow = initRow;
-        var btnNumber = 0;
+        var numberOfColumnsPerRow = nuberOfColumns;         
+
         var raiseEvent = true;
-        var captureB1 = true;
-        var captureB2 = true;
-
-        var numberOfColumnsPerRow = nuberOfColumns;//3 is for Rx-Rx-Rx style, 2 for 1-0-1 style this can be 2 if need to schedule only two times a day read from config or db later
-        numberOfRows = 7; // 7 days a week initial setup 3 times 7 days
-        var firstRowNumber = startingRow;// Considering 0 for Sunday
+        var btnNumber = 0;
 
         const pushButton1 = new Gpio(17, {
             mode: Gpio.INPUT, pullupdon: Gpio.PUD_OFF, edge: Gpio.RISING_EDGE, alert: false, timeout: 10
         }); //use GPIO pin 17 as input, and 'both' button presses, and releases should be handled
 
         pushButton1.glitchFilter(10000);
+
+        var captureB1 = true;
 
         pushButton1.on('interrupt', (value) => { //Watch for hardware interrupts on pushButton GPIO, specify callback function
             if (value === 1 && captureB1) {
@@ -40,6 +45,8 @@ class MatrixSwitchInputControler {
         }); //use GPIO pin 27 as input, and 'both' button presses, and releases should be handled
 
         pushButton2.glitchFilter(10000);
+
+        var captureB2 = true;
 
         pushButton2.on('interrupt', (value) => { //Watch for hardware interrupts on pushButton1 GPIO, specify callback function
             if (value === 1 && captureB2) {
@@ -61,7 +68,7 @@ class MatrixSwitchInputControler {
         var captureB5 = true;
 
         pushButton5.on('interrupt', (value) => { //Watch for hardware interrupts on pushButton1 GPIO, specify callback function
-            if (value === 1 && captureB2) {
+            if (value === 1 && captureB5) {
                 btnNumber = btnNumber + 4;
                 captureB5 = false;
                 if (raiseEvent) {
@@ -70,15 +77,22 @@ class MatrixSwitchInputControler {
                 }
             }
         });
-
+     
         function RaiseButtonPress() {
             if (btnNumber != 0 && btnNumber <= numberOfColumnsPerRow) {
-                var btnRaised = btnNumber + (currentRow - firstRowNumber) * numberOfColumnsPerRow;
-                if (!isNull(buttonPressed))
+                var btnRaised = btnNumber + (currentRow) * numberOfColumnsPerRow;
+                var btnCurrentState = btnRaised in btnStateData ?   btnStateData[btnRaised] : 0;
+                if (!isNull(buttonPressed) && btnCurrentState == 0) {
                     buttonPressed(btnRaised);
+                    btnStateData[btnRaised] = 1;
+                } else if (!isNull(buttonReleased) && btnCurrentState == 1) {
+                    buttonReleased(btnRaised);
+                    btnStateData[btnRaised] = 0;
+                }
+                let data = JSON.stringify(btnStateData);
+                fs.writeFileSync(__dirname + '/buttonstate.json', data);
             }
             resetStatuses();
-
         }
 
         const pushButton3 = new Gpio(22, {
@@ -98,7 +112,6 @@ class MatrixSwitchInputControler {
                 }
             }
         });
-
 
         const pushButton4 = new Gpio(23, {
             mode: Gpio.INPUT, pullupdon: Gpio.PUD_OFF, edge: Gpio.RISING_EDGE, alert: false, timeout: 10
@@ -147,10 +160,13 @@ class MatrixSwitchInputControler {
         currentRow += 1;
         if (currentRow >= numberOfRows)
             currentRow = 0;
-        //resetStatuses();
     }
 
-
+    ReleaseButton(btnNumber) {
+        btnStateData[btnNumber] = 0;
+        let data = JSON.stringify(btnStateData);
+        fs.writeFileSync(__dirname + '/buttonstate.json', data);
+    }
 }
 
 module.exports = MatrixSwitchInputControler

@@ -17,7 +17,25 @@ RGBLEDOutputController.prototype.LedOff = function () {
     ledGreen.digitalWrite(0); // Turn GREEN LED off
     ledBlue.digitalWrite(0); // Turn BLUE LED off
 }
-    
 
+RGBLEDOutputController.prototype.LitBlue = function () {
+    RGBLEDOutputController.Light(0, 0, 255);
+}
+
+RGBLEDOutputController.prototype.LitGreen = function () {
+    RGBLEDOutputController.Light(0, 255, 0);
+}
+
+RGBLEDOutputController.prototype.LitRed = function () {
+    RGBLEDOutputController.Light(255, 0, 0);
+}
+
+RGBLEDOutputController.prototype.LitYellow = function () {
+    RGBLEDOutputController.Light(255, 255, 0);
+}
+
+RGBLEDOutputController.prototype.LitOrange = function () {
+    RGBLEDOutputController.Light(255, 165, 0);
+}
 
 module.exports = RGBLEDOutputController
