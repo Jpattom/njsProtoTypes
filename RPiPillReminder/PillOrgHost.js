@@ -15,13 +15,12 @@ function shutdown() {
     console.clear();
     rgbLEDOutputController.LedOff();
     console.log('\nThank you for using the Product Bye....................');
-
     setTimeout(function () {
         process.exit(0);
     }, 1000);
 }
 
-twoBySevenPillOrganizer = new TwoBySevenPillOrganizer();
+twoBySevenPillOrganizer = new TwoBySevenPillOrganizer(rgbLEDOutputController.ShowAlarm, rgbLEDOutputController.OffAlarm);
 
 const matrixSwitchInputControler = new MatrixSwitchInputControler(
     twoBySevenPillOrganizer.WhenPillInSlot
@@ -29,7 +28,6 @@ const matrixSwitchInputControler = new MatrixSwitchInputControler(
     , twoBySevenPillOrganizer.GetNumberOfDays()
     , twoBySevenPillOrganizer.GetNumberOfSlotsPerDay()
     , new Date().getDay());
-
 
 const job = schedule.scheduleJob('00 00 * * *', function () {
     matrixSwitchInputControler.SetActiveRow();

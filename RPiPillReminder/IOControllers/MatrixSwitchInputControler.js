@@ -1,5 +1,5 @@
 const { exception } = require('console');
-const { isNull } = require('util');
+const { isNullOrUndefined } = require('util');
 const Gpio = require('pigpio').Gpio; //include pigpio to interact with the GPIO
 const fs = require('fs');
 var btnStateData = require(__dirname + '/buttonstate.json');  //new Object();
@@ -16,7 +16,19 @@ class MatrixSwitchInputControler {
         else
             throw exception('businnesslayerexception:Cannot set current row to ' + initRow + ' row number based on 0; if number of is 7 max of init row can be between 0 and 6')
 
-        var numberOfColumnsPerRow = nuberOfColumns;         
+        var numberOfColumnsPerRow = nuberOfColumns;
+
+        Object.keys(btnStateData).forEach(function (key) {
+            switch (parseInt(btnStateData[key])) {
+                case 0:
+                    buttonReleased(parseInt(key));
+                    break;
+                case 1:
+                    buttonPressed(parseInt(key));
+            }
+
+            //console.log(key + " " + btnStateData[key]);
+        });
 
         var raiseEvent = true;
         var btnNumber = 0;
@@ -77,15 +89,15 @@ class MatrixSwitchInputControler {
                 }
             }
         });
-     
+
         function RaiseButtonPress() {
             if (btnNumber != 0 && btnNumber <= numberOfColumnsPerRow) {
                 var btnRaised = btnNumber + (currentRow) * numberOfColumnsPerRow;
-                var btnCurrentState = btnRaised in btnStateData ?   btnStateData[btnRaised] : 0;
-                if (!isNull(buttonPressed) && btnCurrentState == 0) {
+                var btnCurrentState = btnRaised in btnStateData ? btnStateData[btnRaised] : 0;
+                if (!isNullOrUndefined(buttonPressed) && btnCurrentState == 0) {
                     buttonPressed(btnRaised);
                     btnStateData[btnRaised] = 1;
-                } else if (!isNull(buttonReleased) && btnCurrentState == 1) {
+                } else if (!isNullOrUndefined(buttonReleased) && btnCurrentState == 1) {
                     buttonReleased(btnRaised);
                     btnStateData[btnRaised] = 0;
                 }
