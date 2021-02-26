@@ -20,13 +20,14 @@ Date.prototype.addMinutes = function (minutes) {
 
 
 /***
- * @example parameterizedString("my name is %s1 and surname is %s2", "John", "Doe");
- * @return "my name is John and surname is Doe"
+ * example parameterizedString("my name is %s1 and surname is %s2", "John", "Doe");
+ * return "my name is John and surname is Doe"
  *
- * @firstArgument {String} like "my name is %s1 and surname is %s2"
- * @otherArguments {String | Number}
- * @returns {String}
+ * firstArgument {String} like "my name is %s1 and surname is %s2"
+ * otherArguments {String | Number}
+ * returns {String}
  */
+
 function Format (...args) {
     const str = args[0];
     const params = args.filter((arg, index) => index !== 0);
@@ -42,18 +43,18 @@ const { isNullOrUndefined } = require('util');
 
 const numberOfSlotsPerDay = 2;
 const numberOfDays = 7;
-/*
 
-*    *    *    *    *    *
-┬    ┬    ┬    ┬    ┬    ┬
-│    │    │    │    │    │
-│    │    │    │    │    └ day of week (0 - 7) (0 or 7 is Sun)
-│    │    │    │    └───── month (1 - 12)
-│    │    │    └────────── day of month (1 - 31)
-│    │    └─────────────── hour (0 - 23)
-│    └──────────────────── minute (0 - 59)
-└───────────────────────── second (0 - 59, OPTIONAL)
-
+/***
+*
+*        *    *    *    *    *    *
+*        ┬    ┬    ┬    ┬    ┬    ┬
+*        │    │    │    │    │    │
+*        │    │    │    │    │    └ day of week (0 - 7) (0 or 7 is Sun)
+*        │    │    │    │    └───── month (1 - 12)
+*        │    │    │    └────────── day of month (1 - 31)
+*        │    │    └─────────────── hour (0 - 23)
+*        │    └──────────────────── minute (0 - 59)
+*        └───────────────────────── second (0 - 59, OPTIONAL)
 */
 
 var morningSchedule = "*/5 8-12 * * %s1";
@@ -63,43 +64,60 @@ var WhenScheduleElapse;
 var WhenScheduleExpires;
 const pillreminderJobs = {};
 
+var OnPillInSlot;
+var OnPillOutSlot;
+
 class TwoBySevenPillOrganizer {
 
-    constructor(whenScheduleElapse, whenScheduleExpires) {
+    constructor(whenScheduleElapse, whenScheduleExpires, DayCahngeNotifier, onPillInSlot, onPillOutSlot) {
         WhenScheduleElapse = whenScheduleElapse;
         WhenScheduleExpires = whenScheduleExpires;
+        OnPillInSlot = onPillInSlot;
+        OnPillOutSlot = onPillOutSlot;
+
+        schedule.scheduleJob('00 00 * * *', function () {
+            DayCahngeNotifier(new Date().getDay());
+        })
     }
 
     WhenPillInSlot(slotNumber) {
         var dateScheduled = GetSchedule(slotNumber);
         console.log(dateScheduled);
-        var job = schedule.scheduleJob(dateScheduled, function (slotNumber) {
-            if (!isNullOrUndefined(WhenScheduleElapse)) {
-                WhenScheduleElapse();
-            }
-            console.log("Please Take medicine in slot number", slotNumber);
-        }.bind(null, slotNumber));
+        if (isNullOrUndefined(pillreminderJobs[slotNumber])){
+            var job = schedule.scheduleJob(dateScheduled, function (slotNumber) {
+                if (!isNullOrUndefined(WhenScheduleElapse)) {
+                    WhenScheduleElapse(slotNumber % 2 == 0 ? 2 : 1);
+                }
+                console.log("Please Take medicine in slot number", slotNumber);
+            }.bind(null, slotNumber));
 
-        pillreminderJobs[slotNumber] = job;
+            pillreminderJobs[slotNumber] = job;
+        }
 
+        if (!isNullOrUndefined(OnPillInSlot))
+            OnPillInSlot(slotNumber % 2 == 0 ? 2 : 1, 1);
     }
 
     WhenPillOutOfSlot(slotNumber) {
 
         var job = pillreminderJobs[slotNumber];
         if (!isNullOrUndefined(job)) {
+
             job.cancel();
             delete pillreminderJobs[slotNumber];
 
         }
-        pillreminderJobs[slotNumber]
+        //pillreminderJobs[slotNumber]
         console.log('Pills taken from Slot ' + slotNumber);
-        WhenScheduleExpires();
+        if (!isNullOrUndefined(WhenScheduleExpires))
+            WhenScheduleExpires(slotNumber % 2 == 0 ? 2 : 1);
+
+        if (!isNullOrUndefined(OnPillInSlot))
+            OnPillInSlot(slotNumber % 2 == 0 ? 2 : 1, 0);
     }
 
     GetNumberOfSlotsPerDay() { return numberOfSlotsPerDay; }
     GetNumberOfDays() { return numberOfDays; }
-
 }
 
 function GetSchedule(slotNumber) {

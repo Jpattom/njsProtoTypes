@@ -14,7 +14,7 @@ function lightLED(redRGB = 0, greenRGB = 0, blueRGB = 0) {
 
 RGBLEDOutputController.prototype.Light = lightLED;
 
-function ledOff () {
+function ledOff() {
     ledRed.digitalWrite(0); // Turn RED LED off
     ledGreen.digitalWrite(0); // Turn GREEN LED off
     ledBlue.digitalWrite(0); // Turn BLUE LED off
@@ -61,13 +61,13 @@ RGBLEDOutputController.prototype.ShowAlarm = function () {
                 break;
         }
 
-        
+
     }, 1000);
 
     setTimeout(function () {
         clearInterval(intervalFuction); // Stop blinking  
         ledOff(); // Turn LED off.  
-    }, 60000);  
+    }, 60000);
 }
 
 RGBLEDOutputController.prototype.OffAlarm = function () {

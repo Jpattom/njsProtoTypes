@@ -6,29 +6,57 @@ var btnStateData = require(__dirname + '/buttonstate.json');  //new Object();
 
 var currentRow = 7;
 var numberOfRows = 7;
+var numberOfColumnsPerRow
+var ButtonPressed;
+var ButtonReleased;
+//var RowChangeEvent = function (rowNumber) { };
+
+
+function ProcessButtonStateEventForCurrentRow() {
+
+    var firstColumn = currentRow * numberOfColumnsPerRow + 1;
+    var lastColumn = (currentRow * numberOfColumnsPerRow) + numberOfColumnsPerRow;
+    console.log("current row:", currentRow, "number of columns per row:", numberOfColumnsPerRow, "first column:", firstColumn, "last column:", lastColumn )
+    for (var i = firstColumn; i <= lastColumn; i++) {
+        if (isNullOrUndefined(btnStateData[i])) {
+            console.log("column ", i , "state not found in button state date raising switch off")
+            ButtonReleased(i);
+        } else {
+            console.log("column", i, " state found in button state date raising switch accordingly", btnStateData[i])
+            parseInt(btnStateData[i]) === 0 ? ButtonReleased(i) : ButtonPressed(i);
+        }
+    }
+}
 
 class MatrixSwitchInputControler {
 
     constructor(buttonPressed, buttonReleased, paramNumberOfRows = 7, nuberOfColumns = 3, initRow = 0) {
         numberOfRows = paramNumberOfRows;
-        if (initRow < numberOfRows)
-            currentRow = initRow;
-        else
-            throw exception('businnesslayerexception:Cannot set current row to ' + initRow + ' row number based on 0; if number of is 7 max of init row can be between 0 and 6')
+        numberOfColumnsPerRow = nuberOfColumns;
+        ButtonPressed = buttonPressed;
+        ButtonReleased = buttonReleased;
 
-        var numberOfColumnsPerRow = nuberOfColumns;
+        //RowChangeEvent = onRowChange;
+
 
         Object.keys(btnStateData).forEach(function (key) {
             switch (parseInt(btnStateData[key])) {
                 case 0:
-                    buttonReleased(parseInt(key));
+                    ButtonPressed(parseInt(key));
                     break;
                 case 1:
-                    buttonPressed(parseInt(key));
+                    ButtonPressed(parseInt(key));
             }
 
             //console.log(key + " " + btnStateData[key]);
         });
+
+        if (initRow < numberOfRows) {
+            currentRow = initRow;
+        } else
+            throw exception('businnesslayerexception:Cannot set current row to ' + initRow + ' row number based on 0; if number of is 7 max of init row can be between 0 and 6')
+
+        ProcessButtonStateEventForCurrentRow();
 
         var raiseEvent = true;
         var btnNumber = 0;
@@ -94,11 +122,11 @@ class MatrixSwitchInputControler {
             if (btnNumber != 0 && btnNumber <= numberOfColumnsPerRow) {
                 var btnRaised = btnNumber + (currentRow) * numberOfColumnsPerRow;
                 var btnCurrentState = btnRaised in btnStateData ? btnStateData[btnRaised] : 0;
-                if (!isNullOrUndefined(buttonPressed) && btnCurrentState == 0) {
-                    buttonPressed(btnRaised);
+                if (!isNullOrUndefined(ButtonPressed) && btnCurrentState == 0) {
+                    ButtonPressed(btnRaised);
                     btnStateData[btnRaised] = 1;
-                } else if (!isNullOrUndefined(buttonReleased) && btnCurrentState == 1) {
-                    buttonReleased(btnRaised);
+                } else if (!isNullOrUndefined(ButtonReleased) && btnCurrentState == 1) {
+                    ButtonReleased(btnRaised);
                     btnStateData[btnRaised] = 0;
                 }
                 let data = JSON.stringify(btnStateData);
@@ -147,13 +175,16 @@ class MatrixSwitchInputControler {
             currentRow -= 1;
             if (currentRow < 0)
                 currentRow = numberOfRows - 1;
+            ProcessButtonStateEventForCurrentRow();
             resetStatuses();
+
         }
 
         function setToNextRow() {
             currentRow += 1;
             if (currentRow >= numberOfRows)
                 currentRow = 0;
+            ProcessButtonStateEventForCurrentRow();
             resetStatuses();
         }
 
@@ -168,17 +199,18 @@ class MatrixSwitchInputControler {
         }
     }
 
-    SetActiveRow() {
-        currentRow += 1;
+    SetActiveRow(postionOfRow) {
+        currentRow = postionOfRow;
         if (currentRow >= numberOfRows)
             currentRow = 0;
+        ProcessButtonStateEventForCurrentRow();
     }
 
-    ReleaseButton(btnNumber) {
-        btnStateData[btnNumber] = 0;
-        let data = JSON.stringify(btnStateData);
-        fs.writeFileSync(__dirname + '/buttonstate.json', data);
-    }
+    //ReleaseButton(btnNumber) {
+    //    btnStateData[btnNumber] = 0;
+    //    let data = JSON.stringify(btnStateData);
+    //    fs.writeFileSync(__dirname + '/buttonstate.json', data);
+    //}
 }
 
 module.exports = MatrixSwitchInputControler
