@@ -75,7 +75,8 @@ class TwoBySevenPillOrganizer {
         OnPillInSlot = onPillInSlot;
         OnPillOutSlot = onPillOutSlot;
 
-        schedule.scheduleJob('00 00 * * *', function () {
+        schedule.scheduleJob('*/30 * * * *', function () {
+            console.log("Reseting the current day if it has been changed");
             DayCahngeNotifier(new Date().getDay());
         })
     }

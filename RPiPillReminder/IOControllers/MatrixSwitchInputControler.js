@@ -200,10 +200,12 @@ class MatrixSwitchInputControler {
     }
 
     SetActiveRow(postionOfRow) {
-        currentRow = postionOfRow;
-        if (currentRow >= numberOfRows)
-            currentRow = 0;
-        ProcessButtonStateEventForCurrentRow();
+        if (currentRow != postionOfRow) {
+            currentRow = postionOfRow;
+            if (currentRow >= numberOfRows)
+                currentRow = 0;
+            ProcessButtonStateEventForCurrentRow();
+        }
     }
 
     //ReleaseButton(btnNumber) {
