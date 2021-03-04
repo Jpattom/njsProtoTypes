@@ -66,17 +66,30 @@ const pillreminderJobs = {};
 
 var OnPillInSlot;
 var OnPillOutSlot;
+var resetToCurrentDayTimeOutFuction;
+var DayCahngeNotifier;
+
+var startDay = 0;
+
+function GetCurrentDayNumber() {
+
+    console.log("Getting Current Day ")
+
+    return new Date().getDay() + startDay;
+}
 
 class TwoBySevenPillOrganizer {
 
-    constructor(whenScheduleElapse, whenScheduleExpires, DayCahngeNotifier, onPillInSlot, onPillOutSlot) {
+    constructor(whenScheduleElapse, whenScheduleExpires, dayCahngeNotifier, onPillInSlot, onPillOutSlot) {
         WhenScheduleElapse = whenScheduleElapse;
         WhenScheduleExpires = whenScheduleExpires;
+        DayCahngeNotifier = dayCahngeNotifier;
+
         OnPillInSlot = onPillInSlot;
         OnPillOutSlot = onPillOutSlot;
 
-        schedule.scheduleJob('*/30 * * * *', function () {
-            console.log("Reseting the current day if it has been changed");
+        schedule.scheduleJob('00 00 * * *', function () {
+            console.log("Notify the Day Change");
             DayCahngeNotifier(new Date().getDay());
         })
     }
@@ -115,6 +128,19 @@ class TwoBySevenPillOrganizer {
 
         if (!isNullOrUndefined(OnPillInSlot))
             OnPillInSlot(slotNumber % 2 == 0 ? 2 : 1, 0);
+    }
+
+    WhenDayChangeAtInputController(inputDayNumber) {
+        if (!isNullOrUndefined(resetToCurrentDayTimeOutFuction))
+            clearInterval(resetToCurrentDayTimeOutFuction); 
+        if (inputDayNumber != new Date().getDay()) {
+
+            resetToCurrentDayTimeOutFuction = setTimeout(function () {
+                clearInterval(resetToCurrentDayTimeOutFuction);
+                DayCahngeNotifier(GetCurrentDayNumber());
+            }, 1 * 60000);
+        }
+        console.log(resetToCurrentDayTimeOutFuction);
     }
 
     GetNumberOfSlotsPerDay() { return numberOfSlotsPerDay; }

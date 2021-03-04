@@ -1,8 +1,13 @@
 
+const redPin = 4;
+const greenPin = 17;
+const bluePin = 27;
+
+
 const Gpio = require('pigpio').Gpio; //include pigpio to interact with the GPIO
-const ledRed = new Gpio(5, { mode: Gpio.OUTPUT }); //use GPIO pin 5 as output for RED
-const ledGreen = new Gpio(6, { mode: Gpio.OUTPUT }); //use GPIO pin 6 as output for GREEN
-const ledBlue = new Gpio(16, { mode: Gpio.OUTPUT }); //use GPIO pin 16 as output for BLUE
+const ledRed = new Gpio(redPin, { mode: Gpio.OUTPUT }); //use GPIO pin 5 as output for RED
+const ledGreen = new Gpio(greenPin, { mode: Gpio.OUTPUT }); //use GPIO pin 6 as output for GREEN
+const ledBlue = new Gpio(bluePin, { mode: Gpio.OUTPUT }); //use GPIO pin 16 as output for BLUE
 
 var RGBLEDOutputController = function () { }
 

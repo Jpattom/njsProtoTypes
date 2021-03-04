@@ -1,17 +1,19 @@
 // JavaScript source code
-const Gpio = require('pigpio').Gpio; //include pigpio to interact with the GPIO
-const schedule = require('node-schedule');
+//const Gpio = require('pigpio').Gpio; //include pigpio to interact with the GPIO
+//const schedule = require('node-schedule');
 
 const TwoSlotLEDOutputController = require('./IOControllers/TwoSlotLEDOutputController');
+const RGBLEDOutputController = require('./IOControllers/RGBLEDOutputController');
 const MatrixSwitchInputControler = require('./IOControllers/MatrixSwitchInputControler');
 const TwoBySevenPillOrganizer = require('./TwoBySevenPillOrganizer');
 
 var twoSlotLEDOutputController = new TwoSlotLEDOutputController();
-const LED = new Gpio(4, { mode: Gpio.OUTPUT }); //use GPIO pin 4 as output
+var rgbLEDOutputController = new RGBLEDOutputController();
+//const LED = new Gpio(4, { mode: Gpio.OUTPUT }); //use GPIO pin 4 as output
 
 
 function shutdown() {
-    LED.digitalWrite(0);
+    rgbLEDOutputController.LedOff();
     console.clear();
 
     twoSlotLEDOutputController.LEDOnOff(1, 0);
@@ -33,7 +35,7 @@ twoBySevenPillOrganizer = new TwoBySevenPillOrganizer(twoSlotLEDOutputController
 const matrixSwitchInputControler = new MatrixSwitchInputControler(
     twoBySevenPillOrganizer.WhenPillInSlot
     , twoBySevenPillOrganizer.WhenPillOutOfSlot
-    //, twoBySevenPillOrganizer.WhenWeekDayChange
+    , twoBySevenPillOrganizer.WhenDayChangeAtInputController
     , twoBySevenPillOrganizer.GetNumberOfDays()
     , twoBySevenPillOrganizer.GetNumberOfSlotsPerDay()
     , new Date().getDay());
@@ -47,5 +49,5 @@ process.on('SIGHUP', shutdown);
 process.on('SIGINT', shutdown);
 process.on('SIGTERM', shutdown);
 process.on('SIGCONT', shutdown);
-
-LED.digitalWrite(1);
+rgbLEDOutputController.LitBlue();
+//LED.digitalWrite(1);

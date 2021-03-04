@@ -1,7 +1,11 @@
 // JavaScript source code
+
+const slot1 = 12;
+const slot2 = 13;
+
 const Gpio = require('pigpio').Gpio; //include pigpio to interact with the GPIO
-const ledGreen = new Gpio(6, { mode: Gpio.OUTPUT }); //use GPIO pin 6 as output for GREEN
-const ledBlue = new Gpio(16, { mode: Gpio.OUTPUT }); //use GPIO pin 16 as output for BLUE
+const slot1LED = new Gpio(slot1, { mode: Gpio.OUTPUT }); //use GPIO pin 16 as output for BLUE
+const slot2LED = new Gpio(slot2, { mode: Gpio.OUTPUT }); //use GPIO pin 6 as output for GREEN
 var TwoSlotLEDOutputController = function () { }
 
 var intervalFuction
@@ -10,12 +14,12 @@ var intervalFuction
  */
 
 function led1Control(onoff) {
-    ledBlue.digitalWrite(onoff);
+    slot1LED.digitalWrite(onoff);
     console.log("LED 1", onoff === 0 ? "Off" : "On" );
 }
 
 function led2Control(onoff) {
-    ledGreen.digitalWrite(onoff);
+    slot2LED.digitalWrite(onoff);
     console.log("LED 2", onoff === 0 ? "Off" : "On");
 }
 
