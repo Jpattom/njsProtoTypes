@@ -13,31 +13,31 @@ const Gpio = require('pigpio').Gpio; //include pigpio to interact with the GPIO
 //const slot3LED = new Gpio(slot3, { mode: Gpio.OUTPUT }); //use GPIO pin 5 as output for Blue
 //const slot4LED = new Gpio(slot4, { mode: Gpio.OUTPUT }); //use GPIO pin 6 as output for GREEN
 
-const redPin = 4;
-const greenPin = 17;
-const bluePin = 27;
+//const redPin = 4;
+//const greenPin = 17;
+//const bluePin = 27;
 
-const ledRed = new Gpio(redPin, { mode: Gpio.OUTPUT }); //use GPIO pin 5 as output for RED
-const ledGreen = new Gpio(greenPin, { mode: Gpio.OUTPUT }); //use GPIO pin 6 as output for GREEN
-const ledBlue = new Gpio(bluePin, { mode: Gpio.OUTPUT }); //use GPIO pin 16 as output for BLUE
+//const ledRed = new Gpio(redPin, { mode: Gpio.OUTPUT }); //use GPIO pin 5 as output for RED
+//const ledGreen = new Gpio(greenPin, { mode: Gpio.OUTPUT }); //use GPIO pin 6 as output for GREEN
+//const ledBlue = new Gpio(bluePin, { mode: Gpio.OUTPUT }); //use GPIO pin 16 as output for BLUE
 
 
-function lightLED(redRGB = 0, greenRGB = 0, blueRGB = 0) {
-    ledRed.pwmWrite(redRGB); //set RED LED to specified value
-    ledGreen.pwmWrite(greenRGB); //set GREEN LED to specified value
-    ledBlue.pwmWrite(blueRGB); //set BLUE LED to specified value
-}
+//function lightLED(redRGB = 0, greenRGB = 0, blueRGB = 0) {
+//    ledRed.pwmWrite(redRGB); //set RED LED to specified value
+//    ledGreen.pwmWrite(greenRGB); //set GREEN LED to specified value
+//    ledBlue.pwmWrite(blueRGB); //set BLUE LED to specified value
+//}
 
 //slot1LED.digitalWrite(0);
 //slot2LED.digitalWrite(0);
 //slot3LED.digitalWrite(0);
 //slot4LED.digitalWrite(0);
 
-console.log("Showing of");
+//console.log("Showing of");
 
-setTimeout(function () { lightLED(255, 0, 0); console.log("Showing LED GPIO", redPin); }, 4000);
-setTimeout(function () { lightLED(0, 255, 0); console.log("Showing LED GPIO", greenPin); }, 8000);
-setTimeout(function () { lightLED(0, 0, 255); console.log("Showing LED GPIO", bluePin); }, 12000);
+//setTimeout(function () { lightLED(255, 0, 0); console.log("Showing LED GPIO", redPin); }, 4000);
+//setTimeout(function () { lightLED(0, 255, 0); console.log("Showing LED GPIO", greenPin); }, 8000);
+//setTimeout(function () { lightLED(0, 0, 255); console.log("Showing LED GPIO", bluePin); }, 12000);
 
 //setTimeout(function () { slot1LED.digitalWrite(1); console.log("Showing LED GPIO", slot1); }, 4000);
 //setTimeout(function () { slot2LED.digitalWrite(1); console.log("Showing LED GPIO", slot2); }, 8000);
@@ -83,12 +83,68 @@ setTimeout(function () { lightLED(0, 0, 255); console.log("Showing LED GPIO", bl
 
 //}, 1000);
 
-setTimeout(function () {
-//    clearInterval(intervalFuction); // Stop blinking  
-    console.log("Going off");
-    lightLED(0, 0, 0);
-    //slot1LED.digitalWrite(0);
-    //slot2LED.digitalWrite(0);
-    //slot3LED.digitalWrite(0);
-    //slot4LED.digitalWrite(0);
-}, 60000);
+//setTimeout(function () {
+////    clearInterval(intervalFuction); // Stop blinking  
+//    console.log("Going off");
+//    lightLED(0, 0, 0);
+//    //slot1LED.digitalWrite(0);
+//    //slot2LED.digitalWrite(0);
+//    //slot3LED.digitalWrite(0);
+//    //slot4LED.digitalWrite(0);
+//}, 60000);
+
+
+
+const btnNextPin = 22;
+const btn1n3Pin = 23;
+const btn2Pin = 24;
+const btn4Pin = 25;
+
+console.clear();
+
+
+const btn1n3 = new Gpio(btn1n3Pin, {
+    mode: Gpio.INPUT, pullupdon: Gpio.PUD_OFF, edge: Gpio.RISING_EDGE, alert: false, timeout: 10
+});
+
+btn1n3.glitchFilter(10000);
+
+btn1n3.on('interrupt', (value) => {
+    if (value === 1)
+    console.log('btn1n3', value);
+});
+
+const btn2n3 = new Gpio(btn2Pin, {
+    mode: Gpio.INPUT, pullupdon: Gpio.PUD_OFF, edge: Gpio.RISING_EDGE, alert: false, timeout: 10
+});
+
+btn2n3.glitchFilter(10000);
+
+
+btn2n3.on('interrupt', (value) => {
+    if (value === 1)
+    console.log('btn2n3', value);
+});
+
+const btn4 = new Gpio(btn4Pin, {
+    mode: Gpio.INPUT, pullupdon: Gpio.PUD_OFF, edge: Gpio.RISING_EDGE, alert: false, timeout: 10
+});
+
+btn4.glitchFilter(10000);
+
+btn4.on('interrupt', (value) => {
+    if (value === 1)
+    console.log('btn4', value);
+});
+
+
+const btnNext = new Gpio(btnNextPin, {
+    mode: Gpio.INPUT, pullupdon: Gpio.PUD_OFF, edge: Gpio.RISING_EDGE, alert: false, timeout: 10
+});
+
+btnNext.glitchFilter(10000);
+
+btnNext.on('interrupt', (value) => {
+    if (value === 1)
+        console.log('btnNext', value);
+});

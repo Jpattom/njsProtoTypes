@@ -55,7 +55,6 @@ class MatrixSwitchInputControler {
                     ButtonPressed(parseInt(key));
             }
 
-            //console.log(key + " " + btnStateData[key]);
         });
 
         if (initRow < numberOfRows) {
@@ -76,7 +75,7 @@ class MatrixSwitchInputControler {
 
         var captureB1 = true;
 
-        btn1n3.on('interrupt', (value) => { //Watch for hardware interrupts on pushButton GPIO, specify callback function
+        btn1n3.on('interrupt', (value) => { 
             if (value === 1 && captureB1) {
                 btnNumber = btnNumber + 1;
                 captureB1 = false;
@@ -146,7 +145,7 @@ class MatrixSwitchInputControler {
 
         const btnNext = new Gpio(btnNextPin, {
             mode: Gpio.INPUT, pullupdon: Gpio.PUD_OFF, edge: Gpio.RISING_EDGE, alert: false, timeout: 10
-        }); //use GPIO pin 23 as input, and 'both' button presses, and releases should be handled
+        });
 
         btnNext.glitchFilter(10000);
 
@@ -178,7 +177,7 @@ class MatrixSwitchInputControler {
             raiseEvent = true;
             captureB1 = true;
             captureB2 = true;
-            captureB3 = true;
+           // captureB3 = true;
             captureB4 = true;
             captureB5 = true;
         }
