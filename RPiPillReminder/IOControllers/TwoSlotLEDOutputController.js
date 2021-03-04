@@ -2,16 +2,17 @@
 
 const slot1 = 12;
 const slot2 = 13;
+const slot3 = 6;
+const slot4 = 5;
 
 const Gpio = require('pigpio').Gpio; //include pigpio to interact with the GPIO
-const slot1LED = new Gpio(slot1, { mode: Gpio.OUTPUT }); //use GPIO pin 16 as output for BLUE
-const slot2LED = new Gpio(slot2, { mode: Gpio.OUTPUT }); //use GPIO pin 6 as output for GREEN
-var TwoSlotLEDOutputController = function () { }
+const slot1LED = new Gpio(slot1, { mode: Gpio.OUTPUT }); //use GPIO pin output for AM
+const slot2LED = new Gpio(slot2, { mode: Gpio.OUTPUT }); //use GPIO pin output for PM
+const slot3LED = new Gpio(slot3, { mode: Gpio.OUTPUT }); //use GPIO pin output for AM
+const slot4LED = new Gpio(slot4, { mode: Gpio.OUTPUT }); //use GPIO pin output for PM
+var TwoSlotLEDOutputController = function () { slot3LED.digitalWrite(0); slot4LED.digitalWrite(0);}
 
 var intervalFuction
-/*
- Two LEd Experiment Section 
- */
 
 function led1Control(onoff) {
     slot1LED.digitalWrite(onoff);

@@ -9,6 +9,7 @@ const TwoBySevenPillOrganizer = require('./TwoBySevenPillOrganizer');
 
 var twoSlotLEDOutputController = new TwoSlotLEDOutputController();
 var rgbLEDOutputController = new RGBLEDOutputController();
+rgbLEDOutputController.LitBlue();//poweron 
 //const LED = new Gpio(4, { mode: Gpio.OUTPUT }); //use GPIO pin 4 as output
 
 
@@ -49,5 +50,5 @@ process.on('SIGHUP', shutdown);
 process.on('SIGINT', shutdown);
 process.on('SIGTERM', shutdown);
 process.on('SIGCONT', shutdown);
-rgbLEDOutputController.LitBlue();
+
 //LED.digitalWrite(1);
