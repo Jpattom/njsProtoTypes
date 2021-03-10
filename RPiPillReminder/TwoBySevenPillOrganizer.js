@@ -103,6 +103,7 @@ class TwoBySevenPillOrganizer {
                     WhenScheduleElapse(slotNumber % 2 == 0 ? 2 : 1);
                 }
                 console.log("Please Take medicine in slot number", slotNumber);
+                console.log("The Number of time schedule elspsing:", pillreminderJobs[slotNumber].triggeredJobs());
             }.bind(null, slotNumber));
 
             pillreminderJobs[slotNumber] = job;

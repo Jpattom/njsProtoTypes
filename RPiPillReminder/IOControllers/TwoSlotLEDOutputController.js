@@ -12,7 +12,8 @@ const slot3LED = new Gpio(slot3, { mode: Gpio.OUTPUT }); //use GPIO pin output f
 const slot4LED = new Gpio(slot4, { mode: Gpio.OUTPUT }); //use GPIO pin output for PM
 var TwoSlotLEDOutputController = function () { slot3LED.digitalWrite(0); slot4LED.digitalWrite(0);}
 
-var intervalFuction
+var blinker
+var blinkerTimeOut
 
 function led1Control(onoff) {
     slot1LED.digitalWrite(onoff);
@@ -32,16 +33,16 @@ TwoSlotLEDOutputController.prototype.LEDOnOff = function (ledNo, onOff) {
 TwoSlotLEDOutputController.prototype.ShowAlarmOnLed = function (ledNo) {
     switch (ledNo) {
         case 1:
-            intervalFuction = setInterval(function () { led1Control(new Date().getSeconds() % 2); }, 1000);
-            setTimeout(function () {
-                clearInterval(intervalFuction); // Stop blinking  
+            blinker = setInterval(function () { led1Control(new Date().getSeconds() % 2); }, 1000);
+            blinkerTimeOut = setTimeout(function () {
+                clearInterval(blinker); // Stop blinking  
                 led1Control(1);
             }, 60000);
             break;
         case 2:
-            intervalFuction = setInterval(function () { led2Control(new Date().getSeconds() % 2); }, 1000);
-            setTimeout(function () {
-                clearInterval(intervalFuction); // Stop blinking  
+            blinker = setInterval(function () { led2Control(new Date().getSeconds() % 2); }, 1000);
+            blinkerTimeOut = setTimeout(function () {
+                clearInterval(blinker); // Stop blinking  
                 led2Control(1);
             }, 60000);
             break;
@@ -52,13 +53,13 @@ TwoSlotLEDOutputController.prototype.ShowAlarmOnLed = function (ledNo) {
 }
 
 TwoSlotLEDOutputController.prototype.OffAlarmOnLed = function (ledNo) {
+    clearInterval(blinker); // Stop blinking  
+    clearInterval(blinkerTimeOut); // Stop the automatic stopper
     switch (ledNo) {
         case 1:
-            clearInterval(intervalFuction); // Stop blinking  
             led1Control(0);
             break;
         case 2:
-            clearInterval(intervalFuction); // Stop blinking  
             led2Control(0);
             break;
     }
